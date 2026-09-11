@@ -1031,7 +1031,10 @@
           <div class="card-header">
             <div class="card-title-group">
               ${piece.isKingEquivalent ? '<span class="king-badge" title="King Equivalent">👑</span>' : ''}
-              <h2 class="card-name">${escapeHTML(piece.name || "Unnamed Piece")}</h2>
+              <h2 class="card-name">
+                ${piece.iconUrl ? `<img src="${piece.iconUrl}" style="width: 26px; height: 26px; vertical-align: middle; margin-right: 6px; object-fit: contain;" />` : `<span style="margin-right: 6px;">${piece.symbol || '🛡️'}</span>`}
+                ${escapeHTML(piece.name || "Unnamed Piece")}
+              </h2>
               <div class="card-subtitle">${escapeHTML(piece.subtitle || "Unit")} ${piece.faction ? '• ' + escapeHTML(piece.faction) : ''}</div>
             </div>
             <div class="card-cost-badge">
@@ -1594,7 +1597,7 @@
       listEl.innerHTML = filtered.map(item => `
         <div class="sidebar-item ${item.id === this.store.activeCardId ? 'active' : ''}" data-id="${item.id}">
           <div class="item-main">
-            <span class="item-icon">${type === 'community' ? '🌐' : (type === 'piece' ? (item.isKingEquivalent ? '👑' : '🛡️') : (type === 'spell' ? '✨' : '🌍'))}</span>
+            <span class="item-icon">${item.iconUrl ? `<img src="${item.iconUrl}" style="width: 20px; height: 20px; object-fit: contain; vertical-align: middle;" />` : (item.symbol || (type === 'piece' ? (item.isKingEquivalent ? '👑' : '🛡️') : (type === 'spell' ? '✨' : '🌍')))}</span>
             <strong class="item-name">${escapeHTML(item.name || 'Unnamed')}</strong>
           </div>
           <div class="item-meta">
@@ -1703,9 +1706,39 @@
     }
 
     renderBasicsTab(panel, piece) {
+      const PRESET_ICONS = ["⚔️", "🛡️", "🏹", "🐉", "🧙", "👑", "♟️", "♞", "♜", "♝", "♛", "♚", "🦁", "🦅", "🐺", "💀", "🔮", "🔥", "🌍", "💧", "💨", "⚡", "🌿", "💎", "🔱", "🎯", "🔨", "🪓"];
+
       panel.innerHTML = `
         <div class="designer-form-wrapper">
-          <h3 class="form-section-title">📝 Basic Piece Information</h3>
+          <h3 class="form-section-title">📝 Basic Piece Information & Icon</h3>
+
+          <div class="form-group icon-picker-card">
+            <label>Piece Icon & Symbol:</label>
+            <div class="icon-palette-bar">
+              ${PRESET_ICONS.map(sym => `
+                <button class="btn-icon-symbol ${piece.symbol === sym ? 'active' : ''}" data-symbol="${sym}">${sym}</button>
+              `).join("")}
+            </div>
+
+            <div class="form-grid-2" style="margin-top: 10px;">
+              <div class="form-group">
+                <label>Custom Symbol / Emoji:</label>
+                <input type="text" id="pieceSymbolInput" value="${escapeAttr(piece.symbol || '🛡️')}" placeholder="Type any emoji (e.g. 🐉)" />
+              </div>
+              <div class="form-group">
+                <label>Or Upload Custom Image Icon:</label>
+                <input type="file" id="iconFileInput" accept="image/*" style="font-size: 0.8rem;" />
+              </div>
+            </div>
+            ${piece.iconUrl ? `
+              <div class="icon-preview-row">
+                <span>Active Image Icon:</span>
+                <img src="${piece.iconUrl}" class="preview-custom-icon" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px;" />
+                <button id="btnClearIconImg" style="background: #dc2626; color: #fff; border: none; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">Remove Image</button>
+              </div>
+            ` : ''}
+          </div>
+
           <div class="form-grid-2">
             <div class="form-group">
               <label>Piece Name:</label>
@@ -1740,6 +1773,46 @@
           </div>
         </div>
       `;
+
+      panel.querySelectorAll(".btn-icon-symbol").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          piece.symbol = e.currentTarget.dataset.symbol;
+          this.store.save();
+          this.renderBasicsTab(panel, piece);
+          this.renderSidebar();
+          this.updatePreview();
+        });
+      });
+
+      panel.querySelector("#pieceSymbolInput")?.addEventListener("input", (e) => {
+        piece.symbol = e.target.value;
+        this.store.save();
+        this.renderSidebar();
+        this.updatePreview();
+      });
+
+      panel.querySelector("#iconFileInput")?.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            piece.iconUrl = evt.target.result;
+            this.store.save();
+            this.renderBasicsTab(panel, piece);
+            this.renderSidebar();
+            this.updatePreview();
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      panel.querySelector("#btnClearIconImg")?.addEventListener("click", () => {
+        delete piece.iconUrl;
+        this.store.save();
+        this.renderBasicsTab(panel, piece);
+        this.renderSidebar();
+        this.updatePreview();
+      });
 
       const bind = (id, key, isNum = false, isBool = false) => {
         panel.querySelector(`#${id}`)?.addEventListener("input", (e) => {
