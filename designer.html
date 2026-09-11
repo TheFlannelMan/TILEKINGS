@@ -26,14 +26,19 @@
   <!-- Main Designer Mount Point -->
   <div id="designerContainer" style="height: calc(100vh - 40px);"></div>
 
-  <!-- Load Designer App Engine (Direct file:// Compatible Script v2) -->
-  <script src="src/designer.js?v=2"></script>
+  <!-- Load Designer App Engine (Checks src/designer.js with fallback to designer.js) -->
+  <script src="src/designer.js?v=2" onerror="this.onerror=null;var s=document.createElement('script');s.src='designer.js?v=2';document.head.appendChild(s);"></script>
   <script>
     window.addEventListener("DOMContentLoaded", function() {
       var container = document.getElementById("designerContainer");
-      if (window.TileKingsDesigner && window.TileKingsDesigner.DesignerApp) {
-        window.designerApp = new window.TileKingsDesigner.DesignerApp(container);
+      function initApp() {
+        if (window.TileKingsDesigner && window.TileKingsDesigner.DesignerApp) {
+          window.designerApp = new window.TileKingsDesigner.DesignerApp(container);
+        } else {
+          setTimeout(initApp, 100);
+        }
       }
+      initApp();
     });
   </script>
 </body>
