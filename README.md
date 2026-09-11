@@ -1,4 +1,3 @@
-[README.md](https://github.com/user-attachments/files/32116108/README.md)
 # 👑 Tile Kings - Tactical Board Game & Visual Card Designer
 
 > A tactical 12x12 tabletop army skirmish game and standalone **Visual Card & Piece Designer application**.
