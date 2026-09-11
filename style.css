@@ -703,48 +703,51 @@ body {
 
 /* Custom Icon Picker Styling */
 .icon-picker-card {
-  background: #111827;
-  border: 1px solid #1f2937;
-  padding: 14px;
-  border-radius: 10px;
+  background: #1e293b;
+  border: 1px solid #38bdf8;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
 .icon-palette-bar {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   flex-wrap: wrap;
-  max-height: 100px;
+  max-height: 110px;
   overflow-y: auto;
-  background: #1f2937;
-  padding: 8px;
+  background: #0f172a;
+  padding: 10px;
   border-radius: 8px;
-  border: 1px solid #374151;
+  border: 1px solid #334155;
+  margin-top: 4px;
 }
 
 .btn-icon-symbol {
-  background: #111827;
-  border: 1px solid #374151;
+  background: #1e293b;
+  border: 1px solid #475569;
   color: #fff;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  font-size: 1.1rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 1.2rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.1s ease, border-color 0.2s ease;
+  transition: transform 0.15 ease, border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .btn-icon-symbol:hover {
-  transform: scale(1.15);
-  border-color: #38bdf8;
+  transform: scale(1.18);
+  border-color: #f59e0b;
+  background: #334155;
 }
 
 .btn-icon-symbol.active {
   background: #0284c7;
   border-color: #38bdf8;
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
 }
 
 .icon-preview-row {
