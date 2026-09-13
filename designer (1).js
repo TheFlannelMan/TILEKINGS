@@ -23,6 +23,24 @@
     { id: "st_immobile", name: "Immobile", description: "Movement reduced to 0.", isCustom: false }
   ];
 
+  const OFFICIAL_UNIT_KEYWORDS = [
+    { id: "Infantry", label: "Infantry", desc: "Foot unit or ground troop" },
+    { id: "Cavalry", label: "Cavalry", desc: "Mounted or mobile troop" },
+    { id: "Ranged", label: "Ranged", desc: "Includes ranged attacks" },
+    { id: "Siege", label: "Siege", desc: "Heavy attacks or structure breaking" },
+    { id: "Caster", label: "Caster", desc: "Spells or mana manipulation" },
+    { id: "Support", label: "Support", desc: "Enhances or enables other units" },
+    { id: "Emplacement", label: "Emplacement", desc: "Stationary weapon/device" },
+    { id: "Fortification", label: "Fortification", desc: "Stationary defensive structure" },
+    { id: "Royal", label: "Royal", desc: "High-rank royal role" },
+    { id: "Commander", label: "Commander", desc: "Directs or enhances other units" },
+    { id: "Sovereign", label: "Sovereign", desc: "King-equivalent (triggers Regicide)" },
+    { id: "Construct", label: "Construct", desc: "Artificial or built entity" },
+    { id: "Beast", label: "Beast", desc: "Monstrous or animalistic creature" },
+    { id: "Undead", label: "Undead", desc: "Undead entity" },
+    { id: "Elemental", label: "Elemental", desc: "Associated with an element" }
+  ];
+
   const HEALTH_PRESETS = [
     { name: "Pawn", hp: 2, die: "Binary/Physical", type: "Binary / Physical State" },
     { name: "Bishop", hp: 4, die: "d4", type: "Mounted Die" },
@@ -41,6 +59,7 @@
       faction: "Neutral",
       pointsCost: 4,
       isKingEquivalent: false,
+      unitKeywords: ["Infantry"],
       description: "A standard frontline unit in the battle for Tile Kings.",
       prototypeNotes: "Internal note: Test with +1 DEF on Earth terrain.",
       artworkUrl: "",
@@ -53,6 +72,9 @@
       defense: 1,
       movementText: "3",
       maneuverText: "1",
+      resistances: { Fire: 0, Earth: 0, Water: 0, Air: 0 },
+      vulnerabilities: { Fire: 0, Earth: 0, Water: 0, Air: 0 },
+      immunities: [],
       movementProperties: {
         passFriendly: false,
         passEnemy: false,
@@ -88,6 +110,7 @@
           manaType: "Neutral",
           rangeMin: 1,
           rangeMax: 1,
+          antiKeywords: [],
           patternGrid: { "4,5": "target" },
           canAdvanceOnCapture: true,
           knockback: 0,
@@ -116,6 +139,7 @@
     const pawn = createBlankPiece("Pawn");
     pawn.id = "pc_pawn";
     pawn.subtitle = "Infantry / Light";
+    pawn.unitKeywords = ["Infantry"];
     pawn.pointsCost = 1;
     pawn.maxHp = 2;
     pawn.healthDie = "Binary (2/1/0)";
@@ -132,6 +156,7 @@
       manaType: "Neutral",
       rangeMin: 1,
       rangeMax: 1,
+      antiKeywords: [],
       patternGrid: { "4,5": "target" },
       canAdvanceOnCapture: true,
       knockback: 0,
@@ -142,6 +167,7 @@
     const bishop = createBlankPiece("Bishop");
     bishop.id = "pc_bishop";
     bishop.subtitle = "Caster / Diagonal";
+    bishop.unitKeywords = ["Caster"];
     bishop.pointsCost = 4;
     bishop.maxHp = 4;
     bishop.healthDie = "d4";
@@ -157,6 +183,7 @@
       manaType: "Neutral",
       rangeMin: 1,
       rangeMax: 3,
+      antiKeywords: [],
       patternGrid: { "4,4": "target", "3,3": "target", "2,2": "target" },
       canAdvanceOnCapture: false,
       knockback: 0,
@@ -167,6 +194,7 @@
     const rook = createBlankPiece("Rook");
     rook.id = "pc_rook";
     rook.subtitle = "Fortress / Heavy";
+    rook.unitKeywords = ["Siege", "Fortification"];
     rook.pointsCost = 5;
     rook.maxHp = 6;
     rook.healthDie = "d6";
@@ -185,6 +213,7 @@
       manaType: "Neutral",
       rangeMin: 1,
       rangeMax: 1,
+      antiKeywords: [],
       patternGrid: { "4,5": "target" },
       canAdvanceOnCapture: true,
       knockback: 1,
@@ -195,6 +224,7 @@
     const knight = createBlankPiece("Knight");
     knight.id = "pc_knight";
     knight.subtitle = "Cavalry / Charger";
+    knight.unitKeywords = ["Cavalry"];
     knight.pointsCost = 6;
     knight.maxHp = 8;
     knight.healthDie = "d8";
@@ -211,6 +241,7 @@
       manaType: "Neutral",
       rangeMin: 1,
       rangeMax: 2,
+      antiKeywords: [],
       patternGrid: { "4,5": "target", "3,5": "target" },
       canAdvanceOnCapture: true,
       knockback: 0,
@@ -221,6 +252,7 @@
     const queen = createBlankPiece("Queen");
     queen.id = "pc_queen";
     queen.subtitle = "Commander / Apex";
+    queen.unitKeywords = ["Royal", "Commander"];
     queen.pointsCost = 10;
     queen.maxHp = 12;
     queen.healthDie = "d12";
@@ -238,6 +270,7 @@
       manaType: "Neutral",
       rangeMin: 1,
       rangeMax: 2,
+      antiKeywords: [],
       patternGrid: { "4,5": "target", "4,4": "target", "4,6": "target" },
       canAdvanceOnCapture: true,
       knockback: 0,
@@ -248,6 +281,7 @@
     const king = createBlankPiece("King");
     king.id = "pc_king";
     king.subtitle = "Sovereign / Monarch";
+    king.unitKeywords = ["Sovereign", "Royal"];
     king.pointsCost = 8;
     king.maxHp = 20;
     king.healthDie = "d20";
@@ -255,7 +289,6 @@
     king.defense = 3;
     king.movementText = "2";
     king.description = "The core sovereign of the army. Losing the King loses the game.";
-    king.movementGrid = { "4,5": "legal", "4,4": "legal", "4,6": "legal", "6,5": "legal" };
     king.attacks = [{
       id: "atk_king_decree",
       name: "Sovereign Strike",
@@ -264,6 +297,7 @@
       manaType: "Neutral",
       rangeMin: 1,
       rangeMax: 1,
+      antiKeywords: [],
       patternGrid: { "4,5": "target" },
       canAdvanceOnCapture: false,
       knockback: 0,
@@ -1036,6 +1070,11 @@
                 ${escapeHTML(piece.name || "Unnamed Piece")}
               </h2>
               <div class="card-subtitle">${escapeHTML(piece.subtitle || "Unit")} ${piece.faction ? '• ' + escapeHTML(piece.faction) : ''}</div>
+              ${(piece.unitKeywords && piece.unitKeywords.length > 0) ? `
+                <div class="card-unit-keywords" style="font-size: 0.68rem; color: #38bdf8; font-weight: 700; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px;">
+                  ${piece.unitKeywords.map(k => `[${escapeHTML(k)}]`).join(" ")}
+                </div>
+              ` : ''}
             </div>
             <div class="card-cost-badge">
               <span class="cost-num">${piece.pointsCost ?? 0}</span>
@@ -1063,6 +1102,14 @@
               <span class="stat-val">${escapeHTML(String(piece.maneuverText ?? "1"))}</span>
             </div>
           </div>
+
+          <!-- RESISTANCES & VULNERABILITIES (hides if all 0) -->
+          ${(piece.resistances && Object.values(piece.resistances).some(v => v > 0) || piece.vulnerabilities && Object.values(piece.vulnerabilities).some(v => v > 0)) ? `
+            <div class="card-defenses-strip" style="background: rgba(15, 23, 42, 0.8); padding: 4px 10px; font-size: 0.72rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 8px; flex-wrap: wrap;">
+              ${Object.entries(piece.resistances || {}).filter(([_, val]) => val > 0).map(([elem, val]) => `<span style="color: #34d399;">🛡️ Resist ${elem} ${val}</span>`).join(" ")}
+              ${Object.entries(piece.vulnerabilities || {}).filter(([_, val]) => val > 0).map(([elem, val]) => `<span style="color: #f87171;">⚠️ Vuln ${elem} ${val}</span>`).join(" ")}
+            </div>
+          ` : ''}
 
           <!-- VISUAL PATTERNS & ACTIVATION BANNER -->
           <div class="card-diagrams-row">
@@ -1100,6 +1147,7 @@
                 <div class="atk-body">
                   ${atk.rulesText ? `<div class="atk-rules">${escapeHTML(atk.rulesText)}</div>` : ''}
                   <div class="atk-meta-flags">
+                    ${(atk.antiKeywords || []).map(anti => `<span class="flag-tag" style="background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: #fef08a;">Anti-${escapeHTML(anti.keyword)} +${anti.bonus}</span>`).join(" ")}
                     ${atk.canAdvanceOnCapture ? '<span class="flag-tag">Advance on Capture</span>' : ''}
                     ${atk.knockback > 0 ? `<span class="flag-tag">Knockback ${atk.knockback}</span>` : ''}
                     ${atk.statusInflicted ? `<span class="flag-tag status">Inflicts ${escapeHTML(atk.statusInflicted)}</span>` : ''}
@@ -1445,6 +1493,7 @@
             </div>
             <div class="topbar-actions">
               <button class="btn-topbar" id="btnNewPiece">➕ New Piece</button>
+              <button class="btn-topbar" id="btnSaveArmy" style="background: #059669; color: #fff; border-color: #34d399;">🎮 Save Army for Sandbox</button>
               <button class="btn-topbar" id="btnExportProject">💾 Export JSON</button>
               <button class="btn-topbar" id="btnImportProject">📂 Import JSON</button>
               <input type="file" id="fileImportInput" accept=".json" style="display:none;" />
@@ -1512,6 +1561,10 @@
         this.renderSidebar();
         this.renderCenterEditor();
         this.updatePreview();
+      });
+
+      this.containerEl.querySelector("#btnSaveArmy")?.addEventListener("click", () => {
+        this.openArmyBuilderModal();
       });
 
       this.containerEl.querySelector("#btnExportProject").addEventListener("click", () => {
@@ -1707,6 +1760,7 @@
 
     renderBasicsTab(panel, piece) {
       const PRESET_ICONS = ["⚔️", "🛡️", "🏹", "🐉", "🧙", "👑", "♟️", "♞", "♜", "♝", "♛", "♚", "🦁", "🦅", "🐺", "💀", "🔮", "🔥", "🌍", "💧", "💨", "⚡", "🌿", "💎", "🔱", "🎯", "🔨", "🪓"];
+      piece.unitKeywords = piece.unitKeywords || (piece.isKingEquivalent ? ["Sovereign", "Royal"] : ["Infantry"]);
 
       panel.innerHTML = `
         <div class="designer-form-wrapper">
@@ -1757,6 +1811,24 @@
               <input type="number" id="piecePoints" value="${piece.pointsCost ?? 1}" min="0" />
             </div>
           </div>
+
+          <!-- OFFICIAL RULES v0.1 UNIT KEYWORDS -->
+          <div class="form-group keywords-picker-card" style="background: rgba(15, 23, 42, 0.6); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px;">
+            <label style="font-weight: 700; color: #38bdf8; display: block; margin-bottom: 4px;">🏷️ Official Rules v0.1 Unit Keywords:</label>
+            <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 8px;">Select keywords defining this unit for targeting and anti-bonuses:</p>
+            <div class="keywords-checkbox-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px;">
+              ${OFFICIAL_UNIT_KEYWORDS.map(kw => {
+                const isChecked = piece.unitKeywords.includes(kw.id);
+                return `
+                  <label style="display: flex; align-items: center; gap: 6px; font-size: 0.78rem; background: ${isChecked ? 'rgba(56, 189, 248, 0.2)' : 'rgba(0,0,0,0.2)'}; padding: 4px 8px; border-radius: 4px; border: 1px solid ${isChecked ? '#38bdf8' : '#334155'}; cursor: pointer;" title="${kw.desc}">
+                    <input type="checkbox" class="chk-unit-kw" data-kw="${kw.id}" ${isChecked ? 'checked' : ''} />
+                    <span>${kw.label}</span>
+                  </label>
+                `;
+              }).join("")}
+            </div>
+          </div>
+
           <div class="form-group checkbox-group-card">
             <label class="checkbox-label">
               <input type="checkbox" id="chkKingEq" ${piece.isKingEquivalent ? 'checked' : ''} />
@@ -1773,6 +1845,24 @@
           </div>
         </div>
       `;
+
+      panel.querySelectorAll(".chk-unit-kw").forEach(chk => {
+        chk.addEventListener("change", (e) => {
+          const kw = e.target.dataset.kw;
+          piece.unitKeywords = piece.unitKeywords || [];
+          if (e.target.checked) {
+            if (!piece.unitKeywords.includes(kw)) piece.unitKeywords.push(kw);
+            if (kw === "Sovereign") piece.isKingEquivalent = true;
+          } else {
+            piece.unitKeywords = piece.unitKeywords.filter(k => k !== kw);
+            if (kw === "Sovereign") piece.isKingEquivalent = false;
+          }
+          this.store.save();
+          this.renderBasicsTab(panel, piece);
+          this.renderSidebar();
+          this.updatePreview();
+        });
+      });
 
       panel.querySelectorAll(".btn-icon-symbol").forEach(btn => {
         btn.addEventListener("click", (e) => {
@@ -1840,6 +1930,9 @@
     }
 
     renderStatsTab(panel, piece) {
+      piece.resistances = piece.resistances || { Fire: 0, Earth: 0, Water: 0, Air: 0 };
+      piece.vulnerabilities = piece.vulnerabilities || { Fire: 0, Earth: 0, Water: 0, Air: 0 };
+
       panel.innerHTML = `
         <div class="designer-form-wrapper">
           <h3 class="form-section-title">❤️ Health & Core Piece Stats</h3>
@@ -1871,6 +1964,38 @@
               <input type="text" id="pieceMovText" value="${escapeAttr(String(piece.movementText ?? '3'))}" />
             </div>
           </div>
+
+          <h4 class="form-sub-title" style="margin-top: 16px; margin-bottom: 8px; color: #38bdf8;">🛡️ Elemental Resistances & Vulnerabilities</h4>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>🔥 Fire (Resist / Vulnerable):</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="number" class="inp-res" data-elem="Fire" value="${piece.resistances.Fire ?? 0}" min="0" placeholder="Resist Fire" style="width: 50%;" />
+                <input type="number" class="inp-vul" data-elem="Fire" value="${piece.vulnerabilities.Fire ?? 0}" min="0" placeholder="Vulnerable Fire" style="width: 50%;" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>🪨 Earth (Resist / Vulnerable):</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="number" class="inp-res" data-elem="Earth" value="${piece.resistances.Earth ?? 0}" min="0" placeholder="Resist Earth" style="width: 50%;" />
+                <input type="number" class="inp-vul" data-elem="Earth" value="${piece.vulnerabilities.Earth ?? 0}" min="0" placeholder="Vulnerable Earth" style="width: 50%;" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>💧 Water (Resist / Vulnerable):</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="number" class="inp-res" data-elem="Water" value="${piece.resistances.Water ?? 0}" min="0" placeholder="Resist Water" style="width: 50%;" />
+                <input type="number" class="inp-vul" data-elem="Water" value="${piece.vulnerabilities.Water ?? 0}" min="0" placeholder="Vulnerable Water" style="width: 50%;" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>💨 Air (Resist / Vulnerable):</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="number" class="inp-res" data-elem="Air" value="${piece.resistances.Air ?? 0}" min="0" placeholder="Resist Air" style="width: 50%;" />
+                <input type="number" class="inp-vul" data-elem="Air" value="${piece.vulnerabilities.Air ?? 0}" min="0" placeholder="Vulnerable Air" style="width: 50%;" />
+              </div>
+            </div>
+          </div>
         </div>
       `;
 
@@ -1881,6 +2006,24 @@
           piece.healthTrackingType = e.currentTarget.dataset.type;
           this.store.save();
           this.renderStatsTab(panel, piece);
+          this.updatePreview();
+        });
+      });
+
+      panel.querySelectorAll(".inp-res").forEach(inp => {
+        inp.addEventListener("input", (e) => {
+          const elem = e.target.dataset.elem;
+          piece.resistances[elem] = parseInt(e.target.value) || 0;
+          this.store.save();
+          this.updatePreview();
+        });
+      });
+
+      panel.querySelectorAll(".inp-vul").forEach(inp => {
+        inp.addEventListener("input", (e) => {
+          const elem = e.target.dataset.elem;
+          piece.vulnerabilities[elem] = parseInt(e.target.value) || 0;
+          this.store.save();
           this.updatePreview();
         });
       });
@@ -1968,6 +2111,30 @@
                     <input type="text" id="atkValue" value="${escapeAttr(String(atk.attackValue ?? '3'))}" />
                   </div>
                 </div>
+
+                <!-- ANTI-X KEYWORD TRAITS -->
+                <div class="form-group" style="background: rgba(15, 23, 42, 0.6); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin: 12px 0;">
+                  <label style="font-weight: 700; color: #f59e0b; display: block; margin-bottom: 4px;">⚔️ Anti-X Traits (Bonus ATK vs Unit Keywords):</label>
+                  <div class="anti-x-list" id="antiXList">
+                    ${(!atk.antiKeywords || atk.antiKeywords.length === 0) ? '<div style="font-size: 0.75rem; color: #94a3b8;">No Anti-X traits. Select below to add Anti-Cavalry, Anti-Siege, etc.</div>' : atk.antiKeywords.map((anti, aIdx) => `
+                      <div class="anti-x-row" style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
+                        <span style="font-size: 0.8rem; color: #f59e0b; font-weight: 700; min-width: 110px;">Anti-${escapeHTML(anti.keyword)}</span>
+                        <span style="font-size: 0.8rem; color: #94a3b8;">+</span>
+                        <input type="number" class="inp-anti-bonus" data-idx="${aIdx}" value="${anti.bonus ?? 2}" min="1" style="width: 60px;" />
+                        <span style="font-size: 0.8rem; color: #94a3b8;">Bonus ATK</span>
+                        <button class="btn-del-anti" data-idx="${aIdx}" style="background: #dc2626; color: #fff; border: none; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">✕</button>
+                      </div>
+                    `).join("")}
+                  </div>
+                  <div style="display: flex; gap: 8px; margin-top: 10px;">
+                    <select id="selectAntiKw" style="flex: 1;">
+                      ${OFFICIAL_UNIT_KEYWORDS.map(kw => `<option value="${kw.id}">Anti-${kw.label}</option>`).join("")}
+                    </select>
+                    <input type="number" id="inputAntiVal" value="2" min="1" style="width: 60px;" />
+                    <button id="btnAddAntiTrait" style="background: #0284c7; color: #fff; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">+ Add Anti Trait</button>
+                  </div>
+                </div>
+
                 <div id="attackGridContainer"></div>
               </div>
             ` : ''}
@@ -1984,6 +2151,7 @@
           manaType: "Neutral",
           rangeMin: 1,
           rangeMax: 1,
+          antiKeywords: [],
           patternGrid: { "4,5": "target" },
           canAdvanceOnCapture: true,
           knockback: 0,
@@ -2013,6 +2181,41 @@
           atk.attackValue = e.target.value;
           this.store.save();
           this.updatePreview();
+        });
+
+        panel.querySelectorAll(".inp-anti-bonus").forEach(inp => {
+          inp.addEventListener("input", (e) => {
+            const aIdx = parseInt(e.target.dataset.idx);
+            if (atk.antiKeywords && atk.antiKeywords[aIdx]) {
+              atk.antiKeywords[aIdx].bonus = parseInt(e.target.value) || 1;
+              this.store.save();
+              this.updatePreview();
+            }
+          });
+        });
+
+        panel.querySelectorAll(".btn-del-anti").forEach(btn => {
+          btn.addEventListener("click", (e) => {
+            const aIdx = parseInt(e.currentTarget.dataset.idx);
+            if (atk.antiKeywords) {
+              atk.antiKeywords.splice(aIdx, 1);
+              this.store.save();
+              this.renderAttacksTab(panel, piece);
+              this.updatePreview();
+            }
+          });
+        });
+
+        panel.querySelector("#btnAddAntiTrait")?.addEventListener("click", () => {
+          const kw = panel.querySelector("#selectAntiKw").value;
+          const val = parseInt(panel.querySelector("#inputAntiVal").value) || 2;
+          atk.antiKeywords = atk.antiKeywords || [];
+          if (!atk.antiKeywords.some(a => a.keyword === kw)) {
+            atk.antiKeywords.push({ keyword: kw, bonus: val });
+            this.store.save();
+            this.renderAttacksTab(panel, piece);
+            this.updatePreview();
+          }
         });
 
         const atkGridMount = panel.querySelector("#attackGridContainer");
@@ -2120,6 +2323,119 @@
       if (this.store.activeCardType === "piece") {
         this.cardPreview.render(this.store.getActivePiece());
       }
+    }
+
+    openArmyBuilderModal() {
+      const modalDiv = document.createElement("div");
+      modalDiv.className = "designer-modal-overlay";
+      modalDiv.style.cssText = "position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;";
+
+      const pieces = this.store.project.pieces;
+      const armyConfig = {};
+      pieces.forEach(p => {
+        armyConfig[p.id] = (p.isKingEquivalent || (p.unitKeywords || []).includes("Sovereign")) ? 1 : 2;
+      });
+
+      const updateModalUI = () => {
+        let totalPts = 0;
+        let hasSovereign = false;
+
+        pieces.forEach(p => {
+          const count = armyConfig[p.id] || 0;
+          totalPts += (p.pointsCost ?? 0) * count;
+          if (count > 0 && (p.isKingEquivalent || (p.unitKeywords || []).includes("Sovereign"))) {
+            hasSovereign = true;
+          }
+        });
+
+        modalDiv.innerHTML = `
+          <div class="designer-modal-content" style="background: #1e293b; border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 24px; max-width: 580px; width: 100%; color: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <h2 style="font-size: 1.3rem; color: #38bdf8; display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              🎮 Custom Army / Deck Configurator
+            </h2>
+            <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 16px;">
+              Assemble your custom pieces into an Army Set for the Play Game Sandbox!
+            </p>
+
+            <div style="margin-bottom: 12px;">
+              <label style="font-size: 0.82rem; font-weight: 700; display: block; margin-bottom: 4px;">Army Name:</label>
+              <input type="text" id="armyNameInput" value="${escapeAttr(this.store.project.projectInfo.name + ' Army')}" style="width: 100%; padding: 8px; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px;" />
+            </div>
+
+            <div style="max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 16px;">
+              ${pieces.map(p => {
+                const count = armyConfig[p.id] || 0;
+                return `
+                  <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.04); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem;">
+                    <span>
+                      ${p.iconUrl ? `<img src="${p.iconUrl}" style="width: 18px; height: 18px; vertical-align: middle; margin-right: 6px;" />` : `<span style="margin-right: 6px;">${p.symbol || '🛡️'}</span>`}
+                      <strong>${escapeHTML(p.name)}</strong> (${p.pointsCost ?? 0} pts)
+                      ${(p.isKingEquivalent || (p.unitKeywords || []).includes("Sovereign")) ? '<span style="color: #f59e0b; margin-left: 4px;">👑 [Sovereign]</span>' : ''}
+                    </span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <button class="btn-mod-qty" data-id="${p.id}" data-dir="-1" style="background: #334155; color: #fff; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">-</button>
+                      <span style="font-family: monospace; font-weight: 700; width: 24px; text-align: center;">${count}</span>
+                      <button class="btn-mod-qty" data-id="${p.id}" data-dir="1" style="background: #334155; color: #fff; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">+</button>
+                    </div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
+              <div>
+                <span style="font-size: 0.85rem; color: #94a3b8;">Total Points:</span>
+                <strong style="font-size: 1.1rem; color: #f59e0b; margin-left: 6px;">${totalPts} PTS</strong>
+              </div>
+              <div>
+                ${hasSovereign ? `<span style="color: #34d399; font-size: 0.8rem; font-weight: 700;">✓ Sovereign Included</span>` : `<span style="color: #f87171; font-size: 0.8rem; font-weight: 700;">⚠️ Needs 1 Sovereign</span>`}
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+              <button id="btnCloseArmyModal" style="background: #475569; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">Cancel</button>
+              <button id="btnConfirmExportArmy" style="background: #059669; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer;">🚀 Save & Export to Sandbox</button>
+            </div>
+          </div>
+        `;
+
+        modalDiv.querySelectorAll(".btn-mod-qty").forEach(btn => {
+          btn.addEventListener("click", (e) => {
+            const id = e.currentTarget.dataset.id;
+            const dir = parseInt(e.currentTarget.dataset.dir);
+            armyConfig[id] = Math.max(0, (armyConfig[id] || 0) + dir);
+            updateModalUI();
+          });
+        });
+
+        modalDiv.querySelector("#btnCloseArmyModal")?.addEventListener("click", () => {
+          document.body.removeChild(modalDiv);
+        });
+
+        modalDiv.querySelector("#btnConfirmExportArmy")?.addEventListener("click", () => {
+          const armyName = modalDiv.querySelector("#armyNameInput").value || "Custom Army";
+          const customArmyPayload = {
+            name: armyName + ` (${totalPts} pts)`,
+            config: armyConfig,
+            pieces: this.store.project.pieces,
+            spells: this.store.project.spells,
+            lands: this.store.project.lands,
+            timestamp: Date.now()
+          };
+
+          try {
+            localStorage.setItem("tile_kings_custom_armies_v1", JSON.stringify(customArmyPayload));
+            this.store.save();
+            alert(`Success! "${armyName}" saved to Sandbox local storage!\n\nYou can now open the "🎮 Play Game Sandbox" tab to select your custom army and play!`);
+            document.body.removeChild(modalDiv);
+          } catch(err) {
+            alert("Failed to save army to storage: " + err.message);
+          }
+        });
+      };
+
+      document.body.appendChild(modalDiv);
+      updateModalUI();
     }
   }
 

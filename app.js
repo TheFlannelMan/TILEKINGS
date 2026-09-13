@@ -1582,13 +1582,37 @@ function executeAttackSequence(attacker, defender) {
 
     modalContainer.innerHTML = '';
 
-    const totalAttack = profile.attackValue;
-    const totalDefense = defender.defense + spentEarth;
-    const damage = Math.max(0, totalAttack - totalDefense);
+    // Calculate Anti-X Keyword Bonus
+    let antiBonus = 0;
+    if (profile.antiKeywords && defender.unitKeywords) {
+      profile.antiKeywords.forEach(anti => {
+        if (defender.unitKeywords.includes(anti.keyword)) {
+          antiBonus += (parseInt(anti.bonus) || 0);
+        }
+      });
+    }
+
+    const baseAtk = parseInt(profile.attackValue) || 3;
+    const totalAttack = baseAtk + antiBonus;
+    const totalDefense = (defender.defense || 0) + spentEarth;
+    let damage = Math.max(0, totalAttack - totalDefense);
+
+    // Apply typed damage Resistance & Vulnerability
+    const dmgType = profile.manaType && profile.manaType !== 'Neutral' ? profile.manaType : null;
+    if (dmgType && defender.resistances && defender.resistances[dmgType]) {
+      damage = Math.max(0, damage - (defender.resistances[dmgType] || 0));
+    }
+    if (dmgType && defender.vulnerabilities && defender.vulnerabilities[dmgType]) {
+      damage = damage + (defender.vulnerabilities[dmgType] || 0);
+    }
 
     defender.hp = Math.max(0, defender.hp - damage);
 
-    logAction(`⚔️ COMBAT: ${attacker.name} attacks ${defender.name}! ATK ${totalAttack} - DEF ${totalDefense} = ${damage} Damage.`);
+    let logMsg = `⚔️ COMBAT: ${attacker.name} attacks ${defender.name}! ATK ${totalAttack} (Base ${baseAtk}${antiBonus > 0 ? ' + Anti-X ' + antiBonus : ''}) - DEF ${totalDefense} = ${damage} Damage.`;
+    if (dmgType && (defender.resistances?.[dmgType] || defender.vulnerabilities?.[dmgType])) {
+      logMsg += ` (${dmgType} Resist/Vuln applied)`;
+    }
+    logAction(logMsg);
 
     if (defender.hp <= 0) {
       logAction(`💥 ${defender.name} captured!`);
@@ -1596,7 +1620,7 @@ function executeAttackSequence(attacker, defender) {
         attacker.x = defender.x;
         attacker.y = defender.y;
       }
-      if (defender.type === 'king') {
+      if (defender.type === 'king' || (defender.unitKeywords || []).includes("Sovereign")) {
         game.phase = 'GAME_OVER';
         game.winner = attacker.owner;
         logAction(`👑 REGICIDE VICTORY! ${attacker.owner.toUpperCase()} WINS THE MATCH!`);
@@ -1778,7 +1802,78 @@ function logAction(msg) {
   if (appState.game) appState.game.combatLogs.push(msg);
 }
 
+function loadCustomProjectData() {
+  try {
+    const customArmySaved = localStorage.getItem("tile_kings_custom_armies_v1");
+    const projectSaved = localStorage.getItem("tile_kings_project_v1");
+
+    let customPiecesList = [];
+    if (projectSaved) {
+      const proj = JSON.parse(projectSaved);
+      if (proj && Array.isArray(proj.pieces)) {
+        customPiecesList = proj.pieces;
+      }
+    }
+
+    if (customArmySaved) {
+      const armyData = JSON.parse(customArmySaved);
+      if (armyData && armyData.pieces) {
+        customPiecesList = armyData.pieces;
+      }
+      if (armyData && armyData.config) {
+        ARMY_PRESETS.custom = {
+          name: armyData.name || 'Custom Designer Army',
+          config: armyData.config
+        };
+      }
+    }
+
+    if (customPiecesList.length > 0) {
+      customPiecesList.forEach(p => {
+        const key = p.id || p.name.toLowerCase().replace(/\s+/g, '_');
+        appState.customPiecesData[key] = {
+          id: p.id || key,
+          name: p.name || 'Custom Piece',
+          symbol: p.symbol || '🛡️',
+          iconUrl: p.iconUrl || '',
+          pointCost: p.pointsCost ?? 1,
+          maxHP: p.maxHp ?? 1,
+          defense: p.defense ?? 0,
+          unitKeywords: p.unitKeywords || (p.isKingEquivalent ? ["Sovereign", "Royal"] : ["Infantry"]),
+          resistances: p.resistances || { Fire: 0, Earth: 0, Water: 0, Air: 0 },
+          vulnerabilities: p.vulnerabilities || { Fire: 0, Earth: 0, Water: 0, Air: 0 },
+          immunities: p.immunities || [],
+          movement: {
+            type: 'omni',
+            maxDistance: parseInt(p.movementText) || 3,
+            maneuversPerActivation: p.maneuverCount || 1,
+            passthroughFriendly: p.movementProperties?.passFriendly || false,
+            passthroughEnemy: p.movementProperties?.passEnemy || false
+          },
+          activationSequence: p.activationSequence || ['MOVE_THEN_ATTACK'],
+          libraryCapacity: p.libraryCapacity || 0,
+          attackProfiles: (p.attacks || []).map(a => ({
+            id: a.id || 'atk_1',
+            name: a.name || 'Strike',
+            pattern: 'front_line',
+            range: a.rangeMax || 1,
+            attackValue: parseInt(a.attackValue) || 3,
+            antiKeywords: a.antiKeywords || [],
+            manaType: a.manaType || 'Neutral',
+            captureMovement: a.canAdvanceOnCapture ?? true,
+            knockback: a.knockback || 0
+          })),
+          abilities: p.abilities || []
+        };
+      });
+    }
+  } catch(e) {
+    console.warn("Could not load custom project data:", e);
+  }
+}
+
 // Initialize Application
 window.addEventListener('DOMContentLoaded', () => {
+  loadCustomProjectData();
   renderHomeScreen();
 });
