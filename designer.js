@@ -1246,78 +1246,90 @@
   }
 
   function exportCardPNG(piece) {
-    const width = 700;
-    const height = 1040;
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
+    const cardEl = document.getElementById("tileKingsCardFrame");
+    if (!cardEl) return;
 
-    ctx.fillStyle = "#0f172a";
-    ctx.beginPath();
-    if (ctx.roundRect) ctx.roundRect(0, 0, width, height, 24);
-    else ctx.rect(0, 0, width, height);
-    ctx.fill();
+    const rect = cardEl.getBoundingClientRect();
+    const w = rect.width || 360;
+    const h = rect.height || 640;
+    const scale = 2.5; // High resolution 300 DPI print quality
 
-    ctx.strokeStyle = "#38bdf8";
-    ctx.lineWidth = 6;
-    ctx.stroke();
+    // Clone card element
+    const clone = cardEl.cloneNode(true);
 
-    ctx.fillStyle = "#1e293b";
-    ctx.beginPath();
-    if (ctx.roundRect) ctx.roundRect(20, 20, width - 40, 100, 12);
-    else ctx.rect(20, 20, width - 40, 100);
-    ctx.fill();
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 34px sans-serif";
-    ctx.fillText(piece.name || "Unnamed Piece", 40, 65);
-
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "20px sans-serif";
-    ctx.fillText(`${piece.subtitle || "Unit"} • Cost: ${piece.pointsCost ?? 0} PTS`, 40, 98);
-
-    ctx.fillStyle = "#0284c7";
-    ctx.beginPath();
-    ctx.arc(width - 70, 70, 35, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 28px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(`${piece.pointsCost ?? 0}`, width - 70, 78);
-    ctx.textAlign = "left";
-
-    const moveSvg = renderPatternSVG(piece.movementGrid, "movement", 240, 240);
-    const imgMove = new Image();
-    imgMove.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(moveSvg);
-
-    imgMove.onload = () => {
-      ctx.drawImage(imgMove, 40, 275, 280, 280);
-
-      ctx.fillStyle = "#94a3b8";
-      ctx.font = "bold 16px sans-serif";
-      ctx.fillText("MOVEMENT PATTERN", 40, 270);
-
-      if (piece.attacks && piece.attacks[0]) {
-        const atkSvg = renderPatternSVG(piece.attacks[0].patternGrid, "attack", 240, 240);
-        const imgAtk = new Image();
-        imgAtk.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(atkSvg);
-        imgAtk.onload = () => {
-          ctx.drawImage(imgAtk, 380, 275, 280, 280);
-          ctx.fillText("ATTACK PATTERN", 380, 270);
-          finishCanvasExport();
-        };
-      } else {
-        finishCanvasExport();
+    // Extract page CSS rules to embed inside SVG foreignObject
+    let cssText = "";
+    try {
+      for (const sheet of document.styleSheets) {
+        try {
+          for (const rule of sheet.cssRules) {
+            cssText += rule.cssText + "\n";
+          }
+        } catch (e) {}
       }
-    };
+    } catch (e) {}
 
-    function finishCanvasExport() {
+    const svgString = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${w * scale}" height="${h * scale}" viewBox="0 0 ${w} ${h}">
+        <style>
+          ${cssText}
+          body { background: transparent !important; }
+          .tile-kings-card-frame {
+            box-shadow: none !important;
+            margin: 0 !important;
+            border-radius: 18px !important;
+          }
+        </style>
+        <foreignObject width="${w}" height="${h}">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            ${clone.outerHTML}
+          </div>
+        </foreignObject>
+      </svg>
+    `;
+
+    const img = new Image();
+    const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = w * scale;
+      canvas.height = h * scale;
+      const ctx = canvas.getContext("2d");
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, w * scale, h * scale);
+      URL.revokeObjectURL(url);
+
       const link = document.createElement("a");
       link.download = `${(piece.name || "card").toLowerCase().replace(/\s+/g, "_")}_card.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
-    }
+    };
+
+    img.onerror = () => {
+      // Direct Canvas Fallback if SVG object fails
+      const fallbackCanvas = document.createElement("canvas");
+      fallbackCanvas.width = 700;
+      fallbackCanvas.height = 1040;
+      const ctx = fallbackCanvas.getContext("2d");
+      ctx.fillStyle = "#0f172a";
+      ctx.fillRect(0, 0, 700, 1040);
+      ctx.strokeStyle = "#38bdf8";
+      ctx.lineWidth = 6;
+      ctx.strokeRect(10, 10, 680, 1020);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 32px sans-serif";
+      ctx.fillText(piece.name || "Unnamed Piece", 40, 60);
+
+      const link = document.createElement("a");
+      link.download = `${(piece.name || "card").toLowerCase().replace(/\s+/g, "_")}_card.png`;
+      link.href = fallbackCanvas.toDataURL("image/png");
+      link.click();
+    };
+
+    img.src = url;
   }
 
   // ==========================================================================
